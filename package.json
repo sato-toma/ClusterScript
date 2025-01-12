@@ -1,6 +1,6 @@
 {
-  "name": "azukiclusterscript",
-  "version": "0.1.1",
+  "name": "com.azuki.clusterscriptpackage",
+  "version": "0.1.2",
   "description": "",
   "displayName": "AzukiClusterScriptCustomPackage",
   "repository": {

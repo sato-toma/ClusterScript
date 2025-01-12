@@ -1,0 +1,12 @@
+{
+  "name": "azuki.clusterscript",
+  "version": "1.0.0",
+  "author": {
+    "name": "azuki"
+  },
+  "license": "Creative Commons Attribution 4.0 International",
+  "description": "",
+  "dependencies": {
+    "@clustervr/cluster-script-types": "^1.2.3"
+  }
+}
