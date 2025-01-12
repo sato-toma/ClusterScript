@@ -1,7 +1,8 @@
 {
   "name": "azukiclusterscript",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
+  "displayName": "AzukiClusterScriptCustomPackage",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +19,7 @@
   "homepage": "https://github.com/sato-toma/ClusterScript#readme",
   "dependencies": {
     "@clustervr/cluster-script-types": "^1.2.3"
-  }
+  },
+  "type": "template",
+  "unity": "2021.3"
 }
