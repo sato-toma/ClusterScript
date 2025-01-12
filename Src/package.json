@@ -1,16 +1,22 @@
 {
   "name": "azukiclusterscript",
-  "version": "0.1.0",
   "description": "",
   "displayName": "AzukiClusterScriptCustomPackage",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sato-toma/ClusterScript.git"
   },
   "author": {"name": "azuki"},
   "license": "Creative Commons Attribution 4.0 International",
+  "bugs": {
+    "url": "https://github.com/sato-toma/ClusterScript/issues"
+  },
   "homepage": "https://github.com/sato-toma/ClusterScript#readme",
-  "type": "module",
-  "dependencies": {},
-  "unity": "2021.3"
+  "dependencies": {
+    "@clustervr/cluster-script-types": "^1.2.3"
+  }
 }
