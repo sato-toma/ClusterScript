@@ -38,11 +38,19 @@ const PlayerScoresManager = ((() => {
         return _playerRecords;
     };
 
-    const getNextRecord = ($, currentIndex) => {
-        let nextIndex = (currentIndex >= _playerRecords.length - 1) ? 0 : currentIndex + 1;
-        $.log(`nextIndex: ${nextIndex}`);
-        if (nextIndex >= 0 && nextIndex < _playerRecords.length) {
-            let playerRecord = _playerRecords[nextIndex];
+    const addScores = ($, currentIndex, point) => {
+        $.log(`currentIndex: ${currentIndex}`);
+        $.log(`_playerRecords.length: ${_playerRecords.length}`);
+        if (currentIndex >= 0 && currentIndex < _playerRecords.length) {
+            let playerRecord = _playerRecords[currentIndex];
+            $.log(`before playerRecord.Point: ${playerRecord.Point}`);
+            playerRecord.Point += point || 0;
+            $.log(`after playerRecord.Point: ${playerRecord.Point}`);
+        }
+    };
+    const getRecord = ($, currentIndex) => {
+        if (currentIndex >= 0 && currentIndex < _playerRecords.length) {
+            let playerRecord = _playerRecords[currentIndex];
             $.log(`playerRecord: ${JSON.stringify(playerRecord)}`);
             return playerRecord;
         }
@@ -50,7 +58,7 @@ const PlayerScoresManager = ((() => {
         // $.log(`currentIndex: ${currentIndex}`);
         // $.log(`nextIndex: ${nextIndex}`);
     };
-    return { playerScores, getPlayerRecords, getNextRecord };
+    return { playerScores, addScores, getPlayerRecords,  getRecord };
 })());
 
 const ScoreManager = ((playerScoresManager) => {
@@ -71,6 +79,11 @@ const ScoreManager = ((playerScoresManager) => {
             marker.send(key, {});
         }
     };
+    const addPointActiveRecord = ($, point) => {
+        $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
+        _playerScoresManager.addScores($, _activeRecordIndex, point);
+        return _playerScoresManager.getRecord($, _activeRecordIndex);
+    }
     const showListItem = ($, message) => {
         const key = "<manager> show list item";
         for (const marker of _rankingScores) {
@@ -85,23 +98,34 @@ const ScoreManager = ((playerScoresManager) => {
             marker.send(key, message);
         }
     };
+    const getNextActiveScore = ($) => {
+        $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
+        _activeRecordIndex += 1;
+        if (_activeRecordIndex >= _playerScoresManager.getPlayerRecords.length) {
+            _activeRecordIndex = 0;
+        }
+
+        let activeScore = _playerScoresManager.getRecord($, _activeRecordIndex);
+        if (activeScore == null) {
+            _activeRecordIndex = 0
+        }
+        $.log(`activeScore: ${JSON.stringify(activeScore)}`);
+        return activeScore;
+    }
     const getActiveScore = ($) => {
         $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
-        let activeScore = _playerScoresManager.getNextRecord($, _activeRecordIndex);
-        if (activeScore) {
-            _activeRecordIndex += 1;
-        } else {
-            activeRecordIndex = 0
-        }
+        let activeScore = _playerScoresManager.getRecord($, _activeRecordIndex);
         $.log(`activeScore: ${JSON.stringify(activeScore)}`);
         return activeScore;
     }
     return {
         addRankingMarker,
+        addPointActiveRecord,
+        getActiveScore,
         showListItem,
         showList,
         initializeMarkers,
-        getActiveScore,
+        getNextActiveScore,
     };
 })(PlayerScoresManager);
 
@@ -132,12 +156,29 @@ $.onReceive((messageType, arg, sender) => {
             }
         case "<switcher> switch list item":
             {
-                let record = ScoreManager.getActiveScore($);
+                let record = ScoreManager.getNextActiveScore($);
                 let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
                 $.log(`switch list item: ${JSON.stringify(message)}`);
                 ScoreManager.showListItem($, message);
                 break;
             }
+        case "<downer> switch list item":
+            {
+                let record = ScoreManager.addPointActiveRecord($, -1);
+                let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
+                ScoreManager.showListItem($, message);
+                break;
+            }
+        case "<upper> switch list item":
+            {
+                $.log(`<upper> switch list item`);
+                let record = ScoreManager.addPointActiveRecord($, 1);
+                let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
+                ScoreManager.showListItem($, message);
+                break;
+            }
+
+
     }
 }, { item: true, player: true });
 
