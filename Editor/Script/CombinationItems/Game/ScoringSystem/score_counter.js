@@ -5,12 +5,9 @@ $.onStart(() => {
 
 $.onReceive((messageType, arg, sender) => {
     switch (messageType) {
-        case "<> initialize":
+        case "<initializer> initialize":
             $.log("call initialize:");
             $.state.scoreCounterActive = true;
-            break;
-        case "<initializer> initialize ranking manager":
-            sender.send("<marker> initialize ranking manager", {});
             break;
         case "<manager> initialize ranking manager":
             // $.state.rankingManagerItemHandle = arg?.RankingManager;
@@ -27,7 +24,7 @@ const onCollide = () => {
         var scoreCounterActive = $.state.scoreCounterActive;
         if (!scoreCounterActive) return;
 
-        rankingManagerItemHandle = $.state.rankingManagerItemHandle 
+        rankingManagerItemHandle = $.state.rankingManagerItemHandle
         // 前のフレームで接触していたプレイヤーIDの一覧
         let previousOverlapPlayers = _overlapPlayers;
 
