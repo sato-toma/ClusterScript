@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/sato-toma/ClusterScript/issues"
   },
-  "homepage": "https://github.com/sato-toma/ClusterScript#readme"
+  "homepage": "https://github.com/sato-toma/ClusterScript#readme",
+  "dependencies": {
+    "@clustervr/cluster-script-types": "^1.2.3"
+  }
 }
