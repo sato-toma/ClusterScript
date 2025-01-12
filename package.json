@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/sato-toma/ClusterScript.git"
   },
-  "author": "azuki",
+  "author": {"name": "azuki"},
   "license": "Creative Commons Attribution 4.0 International",
   "bugs": {
     "url": "https://github.com/sato-toma/ClusterScript/issues"
@@ -20,6 +20,6 @@
   "dependencies": {
     "@clustervr/cluster-script-types": "^1.2.3"
   },
-  "type": "template",
+  "type": "module",
   "unity": "2021.3"
 }
