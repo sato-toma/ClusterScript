@@ -151,8 +151,8 @@ $.onReceive((messageType, arg, sender) => {
             break;
         case "<marker> player gets point":
             {
-                $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
-                $.log(`player gets point: ${arg?.Point}`);
+                // $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
+                // $.log(`player gets point: ${arg?.Point}`);
                 let map = PlayerScoresManager.playerScores($, arg);
                 processAndLogScores($, map);
                 break;
@@ -161,7 +161,7 @@ $.onReceive((messageType, arg, sender) => {
             {
                 let record = ScoreManager.getNextActiveScore($);
                 let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
-                $.log(`switch list item: ${JSON.stringify(message)}`);
+                // $.log(`switch list item: ${JSON.stringify(message)}`);
                 ScoreManager.showListItem($, message);
                 break;
             }
@@ -177,7 +177,7 @@ $.onReceive((messageType, arg, sender) => {
             }
         case "<upper> switch list item":
             {
-                $.log(`<upper> switch list item`);
+                // $.log(`<upper> switch list item`);
                 let record = ScoreManager.addPointActiveRecord($, 1);
                 let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
                 ScoreManager.showListItem($, message);
@@ -186,8 +186,14 @@ $.onReceive((messageType, arg, sender) => {
                 processAndLogScores($, map);
                 break;
             }
-
-
+        case "<State> player become dead":
+            {
+                $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
+                $.log(`player gets State: ${arg?.State}`);
+                let map = PlayerScoresManager.playerScores($, arg);
+                processAndLogScores($, map);
+                break;
+            }
     }
 }, { item: true, player: true });
 
