@@ -129,6 +129,16 @@ const ScoreManager = ((playerScoresManager) => {
     };
 })(PlayerScoresManager);
 
+const processAndLogScores = ($, map) => {
+    $.log(`Scores map: ${JSON.stringify(Object.fromEntries(map))}`);
+    let message = [];
+    for (let [key, value] of map.entries()) {
+        message.push({ Name: value?.PlayerHandle.userDisplayName, Point: value?.Point, State: value?.State });
+    }
+    $.log(`switch list: ${JSON.stringify(message)}`);
+    ScoreManager.showList($, message);
+};
+
 $.onReceive((messageType, arg, sender) => {
     // $.log(`<manager> onReceive: ${arg}`);
     switch (messageType) {
@@ -144,14 +154,7 @@ $.onReceive((messageType, arg, sender) => {
                 $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
                 $.log(`player gets point: ${arg?.Point}`);
                 let map = PlayerScoresManager.playerScores($, arg);
-
-                $.log(`Scores map: ${JSON.stringify(Object.fromEntries(map))}`);
-                let message = []
-                for (let [key, value] of map.entries()) {
-                    message.push({ Name: value?.PlayerHandle.userDisplayName, Point: value?.Point, State: value?.State });
-                }
-                $.log(`switch list: ${JSON.stringify(message)}`);
-                ScoreManager.showList($, message);
+                processAndLogScores($, map);
                 break;
             }
         case "<switcher> switch list item":
@@ -167,6 +170,9 @@ $.onReceive((messageType, arg, sender) => {
                 let record = ScoreManager.addPointActiveRecord($, -1);
                 let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
                 ScoreManager.showListItem($, message);
+
+                let map = PlayerScoresManager.getPlayerRecords($, arg);
+                processAndLogScores($, map);
                 break;
             }
         case "<upper> switch list item":
@@ -175,6 +181,9 @@ $.onReceive((messageType, arg, sender) => {
                 let record = ScoreManager.addPointActiveRecord($, 1);
                 let message = { Name: record?.PlayerHandle.userDisplayName, Point: record?.Point };
                 ScoreManager.showListItem($, message);
+
+                let map = PlayerScoresManager.getPlayerRecords($, arg);
+                processAndLogScores($, map);
                 break;
             }
 
