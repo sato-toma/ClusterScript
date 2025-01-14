@@ -1,3 +1,5 @@
+const transferDestination = $.subNode("TransferDestination");
+
 $.onStart(() => {
     $.state.rankingManagerItemHandle = null;
 });
@@ -18,7 +20,7 @@ const onCollide = () => {
         rankingManagerItemHandle = $.state.rankingManagerItemHandle
         // 前のフレームで接触していたプレイヤーIDの一覧
         let previousOverlapPlayers = _overlapPlayers;
-
+        const destination = transferDestination.getGlobalPosition();
         // このフレームで接触しているプレイヤーIDの一覧
         let currentOverlapPlayers = [];
         let collisions = $.getOverlaps();
@@ -34,8 +36,8 @@ const onCollide = () => {
             // 前のフレームで接触していたプレイヤーは除外
             // playerHandle.addVelocityの実行には頻度制限があるためその対策、また接触し続けた場合に加速し続けてしまうことを防止
             if (previousOverlapPlayers.includes(playerHandle.id)) return;
-            rankingManagerItemHandle.send("<State> player become dead", { PlayerHandle: playerHandle, State:"dead" });
-
+            rankingManagerItemHandle.send("<State> player become dead", { PlayerHandle: playerHandle, State: "dead" });
+            playerHandle.setPosition(destination);
             $.state.scoreCounterActive = false;
         }
         _overlapPlayers = currentOverlapPlayers;
