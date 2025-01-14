@@ -11,7 +11,7 @@ $.onGrab((isGrab, isLeft, player) => {
     $.state.grabbingLeft = isLeft;
 });
 
-const onCollide = () => { 
+const onCollide = () => {
     let _overlapPlayers = [];
     const speed = 5;
     const dirY = new Vector3(0, -1 * speed,0);
@@ -36,10 +36,10 @@ const onCollide = () => {
             if (previousOverlapPlayers.includes(playerHandle.id)) return;
             if (grabbingLeft) {
                 let direction = playerHandle.getPosition().clone().sub(grabbingPlayerPosition).normalize();
-                playerHandle.addVelocity(direction.clone().multiplyScalar(speed));
+                // playerHandle.addVelocity(direction.clone().multiplyScalar(speed)); // beta @ CCK 2.30.1
             }
             else {
-                playerHandle.addVelocity(dirY);
+                // playerHandle.addVelocity(dirY); // beta @ CCK 2.30.1
              }
         }
 
