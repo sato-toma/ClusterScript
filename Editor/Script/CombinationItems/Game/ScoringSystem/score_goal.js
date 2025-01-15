@@ -15,6 +15,7 @@ $.onReceive((messageType, arg, sender) => {
 }, { item: true, player: true });
 
 const onCollide = () => {
+    const point = 10;
     let _overlapPlayers = [];
     return ($) => {
         rankingManagerItemHandle = $.state.rankingManagerItemHandle
@@ -36,8 +37,9 @@ const onCollide = () => {
             // 前のフレームで接触していたプレイヤーは除外
             // playerHandle.addVelocityの実行には頻度制限があるためその対策、また接触し続けた場合に加速し続けてしまうことを防止
             if (previousOverlapPlayers.includes(playerHandle.id)) return;
-            rankingManagerItemHandle.send("<switcher> player changes state", { PlayerHandle: playerHandle, State: "dead" });
-            playerHandle.setPosition(destination);
+            rankingManagerItemHandle.send("<switcher> player changes state", { PlayerHandle: playerHandle, State: "goal" });
+            rankingManagerItemHandle.send("<marker> player gets point", { PlayerHandle: playerHandle, Point: point });
+            rankingManagerItemHandle.send("<locator> gather players", { Destination: destination });
             $.state.scoreCounterActive = false;
         }
         _overlapPlayers = currentOverlapPlayers;

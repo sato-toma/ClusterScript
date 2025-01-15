@@ -26,7 +26,9 @@ const PlayerScoresManager = ((() => {
         // _playerRecords.set(playerId, playerRecord);
         if (playerRecord) {
             playerRecord.Point += point || 0;
-            playerRecord.State = state || "Alive";
+            if (state) {
+                playerRecord.State = state;
+            }
         } else {
             playerRecord = { PlayerHandle: playerHandle, Point: point || 0, State: state || "Alive" };
             _playerRecords.push(playerRecord);
@@ -186,12 +188,20 @@ $.onReceive((messageType, arg, sender) => {
                 processAndLogScores($, map);
                 break;
             }
-        case "<State> player become dead":
+        case "<switcher> player changes state":
             {
                 $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
                 $.log(`player gets State: ${arg?.State}`);
                 let map = PlayerScoresManager.playerScores($, arg);
                 processAndLogScores($, map);
+                break;
+            }
+        case "<locator> gather players":
+            {
+                let map = PlayerScoresManager.getPlayerRecords($, arg);
+                for (let [key, value] of map.entries()) {
+                    value?.PlayerHandle.setPosition(arg?.Destination);
+                }
                 break;
             }
     }
