@@ -15,7 +15,15 @@ const onCollide = () => {
     let _overlapPlayers = [];
     const speedL = 0.4;
     const speedR = 0.7;
-    return ($) => {
+    let _time = 0;
+    const INTERVAL = 0.1;
+    return ($, deltaTime) => {
+        _time += deltaTime;
+        if (_time < INTERVAL) {
+            return;
+        }
+        _time = 0;
+
         let grabbingPlayer = $.state.grabbingPlayer;
         if (grabbingPlayer == null || !grabbingPlayer.exists()) {
             _overlapPlayers = [];
@@ -47,5 +55,5 @@ const onCollide = () => {
 const handleCollisions = onCollide();
 
 $.onUpdate(deltaTime => {
-    handleCollisions($);
+    handleCollisions($, deltaTime);
 });

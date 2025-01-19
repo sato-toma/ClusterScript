@@ -3,7 +3,7 @@ $.onStart(() => {
 });
 
 $.onInteract(() => {
-    $.log(`onInteract`);
+    // $.log(`onInteract`);
     $.state.rankingManagerItemHandle.send("<switcher> switch list item", {});
 });
 

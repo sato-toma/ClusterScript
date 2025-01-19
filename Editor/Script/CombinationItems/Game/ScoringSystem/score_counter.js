@@ -1,3 +1,5 @@
+const node = $.subNode("Node");
+
 $.onStart(() => {
     $.state.rankingManagerItemHandle = null;
     $.state.scoreCounterActive = true;
@@ -6,8 +8,9 @@ $.onStart(() => {
 $.onReceive((messageType, arg, sender) => {
     switch (messageType) {
         case "<initializer> initialize":
-            $.log("call initialize:");
+            // $.log("call initialize:");
             $.state.scoreCounterActive = true;
+            node.setEnabled(true);
             break;
         case "<manager> initialize ranking manager":
             // $.state.rankingManagerItemHandle = arg?.RankingManager;
@@ -20,9 +23,16 @@ $.onReceive((messageType, arg, sender) => {
 const onCollide = () => {
     const point = 1;
     let _overlapPlayers = [];
-    return ($) => {
+    let _time = 0;
+    const INTERVAL = 0.1;
+    return ($, deltaTime) => {
         var scoreCounterActive = $.state.scoreCounterActive;
         if (!scoreCounterActive) return;
+        _time += deltaTime;
+        if (_time < INTERVAL) {
+            return;
+        }
+        _time = 0;
 
         rankingManagerItemHandle = $.state.rankingManagerItemHandle
         // 前のフレームで接触していたプレイヤーIDの一覧
@@ -47,6 +57,7 @@ const onCollide = () => {
             rankingManagerItemHandle.send("<marker> player gets point", { PlayerHandle: playerHandle, Point: point });
 
             $.state.scoreCounterActive = false;
+            node.setEnabled(false);
         }
         _overlapPlayers = currentOverlapPlayers;
     }
@@ -54,5 +65,5 @@ const onCollide = () => {
 
 const handleCollisions = onCollide();
 $.onUpdate(deltaTime => {
-    handleCollisions($);
+    handleCollisions($, deltaTime);
 });

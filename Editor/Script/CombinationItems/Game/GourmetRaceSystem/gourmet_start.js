@@ -30,9 +30,9 @@ const handlePlayerVelocity = (player, centerPosition) => {
 };
 
 $.onInteract(() => {
-    $.log(`onInteract`);
+    // $.log(`onInteract`);
     const position = $.getPosition();
-    const radius = 10;
+    const radius = 5;
     let players = $.getPlayersNear(position, radius);
     for (let player of players) {
         handlePlayerVelocity(player, position);

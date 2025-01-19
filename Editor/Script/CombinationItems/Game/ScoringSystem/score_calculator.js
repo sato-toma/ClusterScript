@@ -30,7 +30,7 @@ const PlayerScoresManager = ((() => {
                 playerRecord.State = state;
             }
         } else {
-            playerRecord = { PlayerHandle: playerHandle, Point: point || 0, State: state || "Alive" };
+            playerRecord = { PlayerHandle: playerHandle, Point: point || 0, State: state || "ALIVE" };
             _playerRecords.push(playerRecord);
         }
         return _playerRecords;
@@ -41,19 +41,19 @@ const PlayerScoresManager = ((() => {
     };
 
     const addScores = ($, currentIndex, point) => {
-        $.log(`currentIndex: ${currentIndex}`);
-        $.log(`_playerRecords.length: ${_playerRecords.length}`);
+        // $.log(`currentIndex: ${currentIndex}`);
+        // $.log(`_playerRecords.length: ${_playerRecords.length}`);
         if (currentIndex >= 0 && currentIndex < _playerRecords.length) {
             let playerRecord = _playerRecords[currentIndex];
-            $.log(`before playerRecord.Point: ${playerRecord.Point}`);
+            // $.log(`before playerRecord.Point: ${playerRecord.Point}`);
             playerRecord.Point += point || 0;
-            $.log(`after playerRecord.Point: ${playerRecord.Point}`);
+            // $.log(`after playerRecord.Point: ${playerRecord.Point}`);
         }
     };
     const getRecord = ($, currentIndex) => {
         if (currentIndex >= 0 && currentIndex < _playerRecords.length) {
             let playerRecord = _playerRecords[currentIndex];
-            $.log(`playerRecord: ${JSON.stringify(playerRecord)}`);
+            // $.log(`playerRecord: ${JSON.stringify(playerRecord)}`);
             return playerRecord;
         }
         return null;
@@ -68,21 +68,21 @@ const ScoreManager = ((playerScoresManager) => {
     const _rankingScores = [];
     let _activeRecordIndex = 0;
     const addRankingMarker = ($, marker) => {
-        $.log(`addRankingMarker`);
+        // $.log(`addRankingMarker`);
         if (marker) {
             _rankingScores.push(marker);
         }
     };
     const initializeMarkers = ($) => {
         const key = "<initializer> initialize";
-        $.log(`initializeMarkers`);
+        // $.log(`initializeMarkers`);
         for (const marker of _rankingScores) {
             // $.log(`try send`);
             marker.send(key, {});
         }
     };
     const addPointActiveRecord = ($, point) => {
-        $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
+        // $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
         _playerScoresManager.addScores($, _activeRecordIndex, point);
         return _playerScoresManager.getRecord($, _activeRecordIndex);
     }
@@ -101,7 +101,7 @@ const ScoreManager = ((playerScoresManager) => {
         }
     };
     const getNextActiveScore = ($) => {
-        $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
+        // $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
         _activeRecordIndex += 1;
         if (_activeRecordIndex >= _playerScoresManager.getPlayerRecords.length) {
             _activeRecordIndex = 0;
@@ -111,13 +111,13 @@ const ScoreManager = ((playerScoresManager) => {
         if (activeScore == null) {
             _activeRecordIndex = 0
         }
-        $.log(`activeScore: ${JSON.stringify(activeScore)}`);
+        // $.log(`activeScore: ${JSON.stringify(activeScore)}`);
         return activeScore;
     }
     const getActiveScore = ($) => {
-        $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
+        // $.log(`_activeRecordIndex: ${_activeRecordIndex}`);
         let activeScore = _playerScoresManager.getRecord($, _activeRecordIndex);
-        $.log(`activeScore: ${JSON.stringify(activeScore)}`);
+        // $.log(`activeScore: ${JSON.stringify(activeScore)}`);
         return activeScore;
     }
     return {
@@ -132,12 +132,12 @@ const ScoreManager = ((playerScoresManager) => {
 })(PlayerScoresManager);
 
 const processAndLogScores = ($, map) => {
-    $.log(`Scores map: ${JSON.stringify(Object.fromEntries(map))}`);
+    // $.log(`Scores map: ${JSON.stringify(Object.fromEntries(map))}`);
     let message = [];
     for (let [key, value] of map.entries()) {
         message.push({ Name: value?.PlayerHandle.userDisplayName, Point: value?.Point, State: value?.State });
     }
-    $.log(`switch list: ${JSON.stringify(message)}`);
+    // $.log(`switch list: ${JSON.stringify(message)}`);
     ScoreManager.showList($, message);
 };
 
@@ -190,8 +190,8 @@ $.onReceive((messageType, arg, sender) => {
             }
         case "<switcher> player changes state":
             {
-                $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
-                $.log(`player gets State: ${arg?.State}`);
+                // $.log(`player gets PlayerHandle: ${arg?.PlayerHandle}`);
+                // $.log(`player gets State: ${arg?.State}`);
                 let map = PlayerScoresManager.playerScores($, arg);
                 processAndLogScores($, map);
                 break;

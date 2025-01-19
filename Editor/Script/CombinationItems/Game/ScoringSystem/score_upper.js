@@ -3,8 +3,8 @@ $.onStart(() => {
 });
 
 $.onInteract(() => {
-    $.log(`onInteract`);
-    $.log(`$.state.rankingManagerItemHandle: ${$.state.rankingManagerItemHandle}`);
+    // $.log(`onInteract`);
+    // $.log(`$.state.rankingManagerItemHandle: ${$.state.rankingManagerItemHandle}`);
     $.state.rankingManagerItemHandle.send("<upper> switch list item", {});
 });
 
