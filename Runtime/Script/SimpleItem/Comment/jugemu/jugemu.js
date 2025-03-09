@@ -42,23 +42,32 @@ $.onCommentReceived((comments) => {
         // $.log("currentIndex" + currentIndex);
 
         let input = toHiragana(comment.body.trim());
-        $.log("input: " + input);
+        // $.log("input: " + input);
         let expected = jugemuFull.slice(currentIndex, currentIndex + input.length);
-        $.log("expected: " + expected);
+        // $.log("expected: " + expected);
         if (isJugemuMode) {
             if (expected === input) {
                 // 入力が現在のターゲットの続きなら進行
                 currentIndex += input.length;
+
+                let playerHandle = comment.sender;
+                if (playerHandle !== null) {
+                    // not ghost or group viewing users
+                    let players = $.state.dancingPlayers;
+                    $.state.dancingPlayers = players.concat(playerHandle);
+                }
                 if (currentIndex === jugemuFull.length) {
-                    $.log("ok"); // 全部正しく言えた
+                    // $.log("ok"); // 全部正しく言えた
                     isJugemuMode = false;
                     currentIndex = 0;
+                    $.state.dancingPlayers = [];
                 }
             } else {
                 // 入力が現在のターゲットの続きでないなら失敗
-                $.log("ng");
+                // $.log("ng");
                 isJugemuMode = false;
                 currentIndex = 0;
+                $.state.dancingPlayers = [];
             }
             continue;
         }
@@ -66,6 +75,13 @@ $.onCommentReceived((comments) => {
             // 「じゅ」などの部分入力でもモード開始
             isJugemuMode = true;
             currentIndex = input.length;
+
+            let playerHandle = comment.sender;
+            if (playerHandle !== null) {
+                // not ghost or group viewing users
+                let players = $.state.dancingPlayers;
+                $.state.dancingPlayers = players.concat(playerHandle);
+            }
             continue;
         }
         if (comment.body === comment.displayName) {
@@ -81,14 +97,62 @@ $.onCommentReceived((comments) => {
             // ランダムに選択
             let text = texts[Math.floor(Math.random() * texts.length)];
             // subNodeText.setText(text);
-            $.log(text);
+            // $.log(text);
 
             isJugemuMode = false;
             currentIndex = 0;
+            $.state.dancingPlayers = [];
         }
 
     }
 })
 
+const humanoidAnimation = $.humanoidAnimation("Dance0");
+const danceChangePerSec = 0.12;
+$.onStart(() => {
+    $.state.danceTick = 0; //ダンスの秒数
+    $.state.dancingPlayers = []; //ダンスプレイヤー
+    $.state.tick = 0; //ポーズ切りかえを行うまでの秒数を計測
+    $.state.danceLength = humanoidAnimation.getLength(); //ダンスの長さ
+});
+// idでフィルタリングと重複削除を行う関数
+function filterAndRemoveDuplicates(array) {
+    const seenIds = new Set(); // 重複をチェックするためのセット
+    return array.filter((obj) => {
+        // 重複チェック
+        if (seenIds.has(obj.id)) {
+            return false; // すでに同じidのオブジェクトがある場合は除外
+        } else {
+            seenIds.add(obj.id); // 新しいidをセットに追加
+            return true; // 重複していない場合は残す
+        }
+    });
+}
 
+$.onUpdate((deltaTime) => {
+    //ダンスの秒数を進める
+    $.state.danceTick += deltaTime;
+    if ($.state.danceTick > $.state.danceLength) {
+        //ダンスが終わったら先頭のほうに戻す
+        $.state.danceTick -= $.state.danceLength;
+    }
 
+    $.state.tick += deltaTime;
+    if ($.state.tick < danceChangePerSec) {
+        return;
+    }
+    $.state.tick -= danceChangePerSec;
+
+    // $.log("dancingPlayers: " + $.state.dancingPlayers.length);
+    // $.log("danceTick: " + $.state.danceTick);
+    // $.log("danceLength: " + $.state.danceLength);
+    //現在のダンス秒数から現在のポーズを取得
+    let pose = humanoidAnimation.getSample($.state.danceTick);
+    let dancingExistingPlayers = $.state.dancingPlayers.filter((player) => player.exists());
+    let duplicatesRemovedArray = filterAndRemoveDuplicates(dancingExistingPlayers);
+    //ワールドで対象のプレイヤーにポーズをとらせる
+    duplicatesRemovedArray.forEach((p) => p.setHumanoidPose(pose, { timeoutSeconds: 1.0, timeoutTransitionSeconds: 0.3, transitionSeconds: 0.11 }));
+
+    //今回いたプレイヤーは記録しておく
+    $.state.dancingPlayers = dancingExistingPlayers;
+});
