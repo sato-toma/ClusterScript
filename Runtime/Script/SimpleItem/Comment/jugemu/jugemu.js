@@ -35,7 +35,7 @@ const toHiragana = (text) => {
 };
 let isJugemuMode = false;
 let currentIndex = 0;
-
+const sound = $.audio("Sound");
 $.onCommentReceived((comments) => {
     $.log("comments " + comments.map(c => c.body));
     for (const comment of comments) {
@@ -59,6 +59,7 @@ $.onCommentReceived((comments) => {
                 if (currentIndex === jugemuFull.length) {
                     // $.log("ok"); // 全部正しく言えた
                     isJugemuMode = false;
+                    sound.stop();
                     currentIndex = 0;
                     $.state.dancingPlayers = [];
                 }
@@ -66,6 +67,7 @@ $.onCommentReceived((comments) => {
                 // 入力が現在のターゲットの続きでないなら失敗
                 // $.log("ng");
                 isJugemuMode = false;
+                sound.stop();
                 currentIndex = 0;
                 $.state.dancingPlayers = [];
             }
@@ -74,6 +76,7 @@ $.onCommentReceived((comments) => {
         if (jugemuFull.startsWith(input)) {
             // 「じゅ」などの部分入力でもモード開始
             isJugemuMode = true;
+            sound.play();
             currentIndex = input.length;
 
             let playerHandle = comment.sender;
@@ -100,6 +103,7 @@ $.onCommentReceived((comments) => {
             // $.log(text);
 
             isJugemuMode = false;
+            sound.stop();
             currentIndex = 0;
             $.state.dancingPlayers = [];
         }
@@ -107,8 +111,9 @@ $.onCommentReceived((comments) => {
     }
 })
 
+
 const humanoidAnimation = $.humanoidAnimation("Dance0");
-const danceChangePerSec = 0.12;
+const danceChangePerSec = 0.3;
 $.onStart(() => {
     $.state.danceTick = 0; //ダンスの秒数
     $.state.dancingPlayers = []; //ダンスプレイヤー
