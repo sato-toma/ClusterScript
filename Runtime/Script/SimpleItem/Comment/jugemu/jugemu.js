@@ -39,6 +39,7 @@ const JugemuManager = (($) => {
     let _isJugemuMode = false;
     let _currentIndex = 0;
     const sound = $.audio("Sound");
+    const soundEffect = $.audio("SoundEffect");
     function StopJugemu($) {
         _isJugemuMode = false;
         sound.stop();
@@ -70,6 +71,7 @@ const JugemuManager = (($) => {
                     if (_currentIndex === jugemuFull.length) {
                         // $.log("ok"); // 全部正しく言えた
                         StopJugemu($);
+                        soundEffect.play();
                     }
                 } else {
                     // 入力が現在のターゲットの続きでないなら失敗
@@ -163,7 +165,7 @@ $.onCommentReceived((comments) => {
 
 const IntervalUpdater = (() => {
     let _tick = 0; // 切りかえを行うまでの秒数を計測
-    const INTERVAL = 0.2;
+    const INTERVAL = 0.25; // 適当な秒数
     const IsEnough = ($, deltaTime) => {
         _tick += deltaTime;
         if (_tick < INTERVAL) {
