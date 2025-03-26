@@ -11,6 +11,9 @@ $.onUpdate(deltaTime => {
 $.onCommentReceived((comments) => {
     // $.log("comments " + comments.map(c => c.body));
     const speedRegex = /(u|d|U|D|↑|↓|上|下)/;
+    const dangerousDrivingRegex = /(あおり|煽り)(運転|うんてん)/;
+    const superAccelerationRegex = /(超|ちょう)(加速|かそく)/;
+    const doughnutRegex = /ドーナッツターン/;
     for (const comment of comments) {
         const matchSpeed = comment.body.match(speedRegex);
         if ( matchSpeed) {
@@ -21,11 +24,24 @@ $.onCommentReceived((comments) => {
             } else if (["d", "D", "↓", "下"].includes(direction)) {
                 speed += -1;
             }
+            $.state.accel = true;
+        }
+
+        if (dangerousDrivingRegex.test(comment.body)) {
+            $.state.dangerousDrivingRegex = true;
+        }
+
+        if (superAccelerationRegex.test(comment.body)) {
+            $.state.superAccelerationRegex = true;
+        }
+
+        if (doughnutRegex.test(comment.body)) {
+            $.state.doughnutRegex = true;
         }
     }
-    $.state.accel = true;
-})
 
+})
+let INTERVAL = 0.5; // [s]
 $.onPhysicsUpdate(deltaTime => {
     let accel = $.state.accel ?? false;
     if (accel) {
@@ -36,27 +52,90 @@ $.onPhysicsUpdate(deltaTime => {
         $.state.flag = !flag;
         if (flag) {
             let itemRotation = $.getRotation();
-            $.log("itemRotation: " + itemRotation);
+            // $.log("itemRotation: " + itemRotation);
             const dir = new Vector3(1, 1, 0);
             // const theta = new Quaternion().setFromEulerAngles(new Vector3(0, 60, 0));
             const intensity = 4;
             // const velocity = dir.applyQuaternion(itemRotation).applyQuaternion(theta).multiplyScalar(intensity);
             const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
-            $.log("addImpulsiveForce: velocity: " + velocity);
+            // $.log("addImpulsiveForce: velocity: " + velocity);
             $.addImpulsiveForce(velocity);
         }
         else {
             let itemRotation = $.getRotation();
-            $.log("itemRotation: " + itemRotation);
+            // $.log("itemRotation: " + itemRotation);
             const dir = new Vector3(0, 1, 0);
             // const theta = new Quaternion().setFromEulerAngles(new Vector3(0, 60, 0));
             const intensity = 4;
             // const velocity = dir.applyQuaternion(itemRotation).applyQuaternion(theta).multiplyScalar(intensity);
             const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
-            $.log("addImpulsiveTorque: velocity: " + velocity);
+            // $.log("addImpulsiveTorque: velocity: " + velocity);
             $.addImpulsiveForce(new Vector3(0, 3, 0));
             $.addImpulsiveTorque(velocity);
         }
+    }
+    let dangerousDrivingRegex = $.state.dangerousDrivingRegex ?? false;
+    if (dangerousDrivingRegex) {
+        let counter = $.state.counter??0;
+        // $.log("counter: " + counter);
+        let _time = $.state.time ?? 0;
+        _time += deltaTime;
+        $.state.time = _time;
+        if (_time < INTERVAL) {
+            return;
+        }
 
+        $.state.time = 0;
+
+        let itemRotation = $.getRotation();
+        let torque = counter % 2 == 0 ? new Vector3(0, 1, 0) : new Vector3(0, -1, 0);
+        $.log("torque: " + torque);
+        const velocity = torque.applyQuaternion(itemRotation);
+        $.addImpulsiveForce(new Vector3(0, 1, 0));
+        $.addImpulsiveTorque(velocity);
+        counter++;
+        if (counter >= 4) {
+            counter = 0;
+            $.state.dangerousDrivingRegex = false;
+        }
+        $.state.counter = counter;
+    }
+    let superAccelerationRegex = $.state.superAccelerationRegex ?? false;
+    if (superAccelerationRegex) {
+        $.state.superAccelerationRegex=false;
+        let itemRotation = $.getRotation();
+        // $.log("itemRotation: " + itemRotation);
+        const dir = new Vector3(1, 0, 0);
+        // const theta = new Quaternion().setFromEulerAngles(new Vector3(0, 60, 0));
+        const intensity = 100;
+        // const velocity = dir.applyQuaternion(itemRotation).applyQuaternion(theta).multiplyScalar(intensity);
+        const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
+        // $.log("addImpulsiveForce: velocity: " + velocity);
+        $.addImpulsiveForce(velocity);
+    }
+
+    let doughnutRegex = $.state.doughnutRegex ?? false;
+    if (doughnutRegex) {
+        let _time = $.state.time1 ?? 0;
+        _time += deltaTime;
+        $.state.time1 = _time;
+        if (_time > INTERVAL * 10) {
+            $.state.doughnutRegex = false;
+            $.state.time1 = 0;
+            return;
+        }
+
+        let itemRotation = $.getRotation();
+        let torque = new Vector3(0, 1, 0) ;
+        // $.log("itemRotation: " + itemRotation);
+
+        // const theta = new Quaternion().setFromEulerAngles(new Vector3(0, 60, 0));
+        const velocityTorque = torque.applyQuaternion(itemRotation);
+
+        // $.log("addImpulsiveForce: velocity: " + velocity);
+        $.addImpulsiveTorque(velocityTorque);
+        const dir = new Vector3(0.5, 0, 0);
+        const velocity = dir.applyQuaternion(itemRotation);
+        $.addImpulsiveForce(velocity);
     }
 });
