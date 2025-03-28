@@ -11,9 +11,11 @@ $.onUpdate(deltaTime => {
 $.onCommentReceived((comments) => {
     // $.log("comments " + comments.map(c => c.body));
     const speedRegex = /(u|d|U|D|↑|↓|上|下)/;
-    const dangerousDrivingRegex = /(あおり|煽り)(運転|うんてん)/;
-    const superAccelerationRegex = /(超|ちょう)(加速|かそく)/;
-    const doughnutRegex = /ドーナッツターン/;
+    const dangerousDrivingRegex = /(あおり|煽り|アオリ)(運転|うんてん|ウンテン)/;
+    const superAccelerationRegex = /(超|ちょう|チョウ)(加速|かそく|カソク)/;
+    const doughnutRegex = /(ドーナッツターン|どーなっつたーん)/;
+    const aisiteruRegex = /(愛|あい|アイ)しているの(サイン|さいん)/;
+    const deathRoleRegex = /(デスロール|ですろーる)/;
     for (const comment of comments) {
         const matchSpeed = comment.body.match(speedRegex);
         if ( matchSpeed) {
@@ -37,6 +39,12 @@ $.onCommentReceived((comments) => {
 
         if (doughnutRegex.test(comment.body)) {
             $.state.doughnutRegex = true;
+        }
+        if (deathRoleRegex.test(comment.body)) {
+            $.state.deathRoleRegex = true;
+        }
+        if (aisiteruRegex.test(comment.body)) {
+            $.state.aisiteruRegex = true;
         }
     }
 
@@ -137,5 +145,53 @@ $.onPhysicsUpdate(deltaTime => {
         const dir = new Vector3(0.5, 0, 0);
         const velocity = dir.applyQuaternion(itemRotation);
         $.addImpulsiveForce(velocity);
+    }
+    let deathRoleRegex = $.state.deathRoleRegex ?? false;
+    if (deathRoleRegex) {
+        let counter = $.state.counterDeathRoleRegex ?? 0;
+        // $.log("counter: " + counter);
+        let _time = $.state.timeDeathRoleRegex ?? 0;
+        _time += deltaTime;
+        $.state.timeDeathRoleRegex = _time;
+        if (_time < INTERVAL) {
+            return;
+        }
+
+        $.state.timeDeathRoleRegex = 0;
+
+        let itemRotation = $.getRotation();
+        let torque = new Vector3(2, 0, 0);
+        $.log("torque: " + torque);
+        const velocity = torque.applyQuaternion(itemRotation);
+        $.addImpulsiveForce(new Vector3(0, 1, 0));
+        $.addImpulsiveTorque(velocity);
+        counter++;
+        if (counter >= 6) {
+            counter = 0;
+            $.state.deathRoleRegex = false;
+        }
+        $.state.counterDeathRoleRegex = counter;
+    }
+    let aisiteruRegex = $.state.aisiteruRegex ?? false;
+    if (aisiteruRegex) {
+
+        let counter = $.state.counterAisiteru ?? 0;
+        let _time = $.state.timeAisiteru ?? 0;
+        _time += deltaTime;
+        $.state.timeAisiteru = _time;
+        if (_time < INTERVAL) {
+            return;
+        }
+        $.state.timeAisiteru = 0;
+        let hazardLampNode = $.subNode("HazardLamp");
+        let currentActive = hazardLampNode.getEnabled();
+        hazardLampNode.setEnabled(!currentActive);
+        counter++;
+        if (counter >= 10) {
+            counter = 0;
+            $.state.aisiteruRegex = false;
+            hazardLampNode.setEnabled(false);
+        }
+        $.state.counterAisiteru = counter;
     }
 });
