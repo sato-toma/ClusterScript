@@ -42,6 +42,114 @@ const DangerousDrivingManager = (($) => {
     return { onCommentReceived, onPhysicsUpdate };
 })($);
 
+const AccelerationManager = (($) => {
+    const UpRegex = /(u|U|↑|上)/;
+    const DownRegex = /(d|D|↓|下)/;
+    let _upActive = false
+    let _downActive = false
+    const onCommentReceived = ($, message) => {
+        if (UpRegex.test(message)) {
+            _upActive = true;
+        }
+        if (DownRegex.test(message)) {
+            _downActive = true;
+        }
+    }
+    const onPhysicsUpdate = ($, deltaTime) => {
+        if (_upActive ^ _downActive) {
+            let itemRotation = $.getRotation();
+            const dir = _upActive ? dirFrontItem.clone() : dirFrontItem.clone().negate();
+            let intensity = 4;
+            const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
+            $.addImpulsiveForce(velocity);
+
+            _upActive = false;
+            _downActive = false;
+        }
+    }
+    return { onCommentReceived, onPhysicsUpdate };
+})($);
+
+const PopManager = (($) => {
+    const Regex = /(ポップ|ぽっぷ)/;
+
+    let _active = false
+    const onCommentReceived = ($, message) => {
+        if (Regex.test(message)) {
+            _active = true;
+        }
+    }
+    const onPhysicsUpdate = ($, deltaTime) => {
+        if (_active) {
+            _active = false;
+
+            let itemRotation = $.getRotation();
+            const dir = dirFrontItem.clone().add(dirUpItem.clone());
+            const intensity = 4;
+            const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
+            // $.log("addImpulsiveForce: velocity: " + velocity);
+            $.addImpulsiveForce(velocity);
+        }
+    }
+    return { onCommentReceived, onPhysicsUpdate };
+})($);
+
+const RotateManager = (($) => {
+    const Regex = /(回転|かいてん|カイテン|ローテーション)/;
+
+    let _active = false
+    const onCommentReceived = ($, message) => {
+        if (Regex.test(message)) {
+            _active = true;
+        }
+    }
+    const onPhysicsUpdate = ($, deltaTime) => {
+        if (_active) {
+            _active = false;
+
+            let itemRotation = $.getRotation();
+            const intensityTorque = 4;
+            const dirTorque = dirUpItem.clone().multiplyScalar(intensityTorque);
+            const velTorque = dirTorque.applyQuaternion(itemRotation);
+            $.addImpulsiveTorque(velTorque);
+
+            const intensity = 3;
+            const dir = dirUpItem.clone().multiplyScalar(intensity);
+            $.addImpulsiveForce(dir);
+        }
+    }
+    return { onCommentReceived, onPhysicsUpdate };
+})($);
+
+const LeftRightManager = (($) => {
+    const LeftRegex = /(←|ヒダリ|左|ひだり)/;
+    const RightRegex = /(→|ミギ|右|みぎ)/;
+
+    let _leftActive = false
+    let _rightActive = false
+    const onCommentReceived = ($, message) => {
+        if (LeftRegex.test(message)) {
+            _leftActive = true;
+        }
+        if (RightRegex.test(message)) {
+            _rightActive = true;
+        }
+    }
+    const onPhysicsUpdate = ($, deltaTime) => {
+        if (_leftActive ^ _rightActive) {
+            let itemRotation = $.getRotation();
+            const dir = _rightActive ? dirUpItem.clone() : dirUpItem.clone().negate();
+            const intensityTorque = 4;
+            const dirTorque = dir.clone().multiplyScalar(intensityTorque);
+            const velTorque = dirTorque.applyQuaternion(itemRotation);
+            $.addImpulsiveTorque(velTorque);
+            _leftActive = false;
+            _rightActive = false;
+        }
+    }
+    return { onCommentReceived, onPhysicsUpdate };
+})($);
+
 const SuperAccelerationManager = (($) => {
     const REGEX = /(超|ちょう|チョウ)(加速|かそく|カソク)/;
     let _active = false
@@ -207,66 +315,30 @@ const PumpingBrakeManager = (($) => {
 
 $.onCommentReceived((comments) => {
     // $.log("comments " + comments.map(c => c.body));
-    const speedRegex = /(u|d|U|D|↑|↓|上|下)/;
-
     for (const comment of comments) {
+        AccelerationManager.onCommentReceived($, comment.body);
         DangerousDrivingManager.onCommentReceived($, comment.body);
-        SuperAccelerationManager.onCommentReceived($, comment.body);
-        DoughnutManager.onCommentReceived($, comment.body);
         DeathRoleManager.onCommentReceived($, comment.body);
+        DoughnutManager.onCommentReceived($, comment.body);
+        LeftRightManager.onCommentReceived($, comment.body);
         LovingManager.onCommentReceived($, comment.body);
+        PopManager.onCommentReceived($, comment.body);
         PumpingBrakeManager.onCommentReceived($, comment.body);
-
-        const matchSpeed = comment.body.match(speedRegex);
-        if (matchSpeed) {
-            const direction = matchSpeed[1];
-            let speed = 0;
-            if (["u", "U", "↑", "上"].includes(direction)) {
-                speed += 1;
-            } else if (["d", "D", "↓", "下"].includes(direction)) {
-                speed += -1;
-            }
-            $.state.accel = true;
-        }
+        RotateManager.onCommentReceived($, comment.body);
+        SuperAccelerationManager.onCommentReceived($, comment.body);
     }
 })
 
 $.onPhysicsUpdate(deltaTime => {
-    let accel = $.state.accel ?? false;
-    if (accel) {
-        $.state.accel = false;
-        // $.log("relonPhysicsUpdateeasing");
-        // $.log("accel: " + accel);
-        let flag = $.state.flag ?? true;
-        $.state.flag = !flag;
-        if (flag) {
-            let itemRotation = $.getRotation();
-            // $.log("itemRotation: " + itemRotation);
-            const dir = new Vector3(1, 1, 0);
-            // const theta = new Quaternion().setFromEulerAngles(new Vector3(0, 60, 0));
-            const intensity = 4;
-            // const velocity = dir.applyQuaternion(itemRotation).applyQuaternion(theta).multiplyScalar(intensity);
-            const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
-            // $.log("addImpulsiveForce: velocity: " + velocity);
-            $.addImpulsiveForce(velocity);
-        }
-        else {
-            let itemRotation = $.getRotation();
-            // $.log("itemRotation: " + itemRotation);
-            const dir = new Vector3(0, 1, 0);
-            // const theta = new Quaternion().setFromEulerAngles(new Vector3(0, 60, 0));
-            const intensity = 4;
-            // const velocity = dir.applyQuaternion(itemRotation).applyQuaternion(theta).multiplyScalar(intensity);
-            const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
-            // $.log("addImpulsiveTorque: velocity: " + velocity);
-            $.addImpulsiveForce(new Vector3(0, 3, 0));
-            $.addImpulsiveTorque(velocity);
-        }
-    }
+    AccelerationManager.onPhysicsUpdate($, deltaTime);
     DangerousDrivingManager.onPhysicsUpdate($, deltaTime);
-    SuperAccelerationManager.onPhysicsUpdate($, deltaTime);
-    DoughnutManager.onPhysicsUpdate($, deltaTime);
     DeathRoleManager.onPhysicsUpdate($, deltaTime);
+    DoughnutManager.onPhysicsUpdate($, deltaTime);
+    LeftRightManager.onPhysicsUpdate($, deltaTime);
     LovingManager.onPhysicsUpdate($, deltaTime);
+    PopManager.onPhysicsUpdate($, deltaTime);
     PumpingBrakeManager.onPhysicsUpdate($, deltaTime);
+    RotateManager.onPhysicsUpdate($, deltaTime);
+    SuperAccelerationManager.onPhysicsUpdate($, deltaTime);
 });
+
