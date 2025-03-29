@@ -15,6 +15,7 @@ $.onCommentReceived((comments) => {
     const superAccelerationRegex = /(超|ちょう|チョウ)(加速|かそく|カソク)/;
     const doughnutRegex = /(ドーナッツターン|どーなっつたーん)/;
     const aisiteruRegex = /(愛|あい|アイ)しているの(サイン|さいん)/;
+    const pompingBrakeRegex = /(ポンピングブレーキ|ぽんぴんぐぶれーき)/;
     const deathRoleRegex = /(デスロール|ですろーる)/;
     for (const comment of comments) {
         const matchSpeed = comment.body.match(speedRegex);
@@ -45,6 +46,9 @@ $.onCommentReceived((comments) => {
         }
         if (aisiteruRegex.test(comment.body)) {
             $.state.aisiteruRegex = true;
+        }
+        if (pompingBrakeRegex.test(comment.body)) {
+            $.state.pompingBrakeRegex = true;
         }
     }
 
@@ -193,5 +197,28 @@ $.onPhysicsUpdate(deltaTime => {
             hazardLampNode.setEnabled(false);
         }
         $.state.counterAisiteru = counter;
+    }
+
+    let pompingBrakeRegex = $.state.pompingBrakeRegex ?? false;
+    if (pompingBrakeRegex) {
+
+        let counter = $.state.counterPomping ?? 0;
+        let _time = $.state.timePomping ?? 0;
+        _time += deltaTime;
+        $.state.timePomping = _time;
+        if (_time < INTERVAL) {
+            return;
+        }
+        $.state.timePomping = 0;
+        let hazardLampNode = $.subNode("BrakeLamp");
+        let currentActive = hazardLampNode.getEnabled();
+        hazardLampNode.setEnabled(!currentActive);
+        counter++;
+        if (counter >= 6) {
+            counter = 0;
+            $.state.pompingBrakeRegex = false;
+            hazardLampNode.setEnabled(false);
+        }
+        $.state.counterPomping = counter;
     }
 });
