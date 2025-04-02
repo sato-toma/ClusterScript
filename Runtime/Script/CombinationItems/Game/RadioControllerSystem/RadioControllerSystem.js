@@ -2,6 +2,12 @@ const dirFrontItem = new Vector3(1, 0, 0) // アイテムの正面のベクト�
 const dirUpItem = new Vector3(0, 1, 0) // アイテムの上のベクトル
 const dirRightItem = new Vector3(0, 0, 1) // アイテムの右のベクトル
 
+const soundExplode = $.audio("Explode");
+const soundBrake = $.audio("Brake");
+const soundHorn = $.audio("Horn");
+const soundIdling = $.audio("Idling");
+const soundRocketStart = $.audio("RocketStart");
+
 const DangerousDrivingManager = (($) => {
     const REGEX = /(あおり|煽り|アオリ)(運転|うんてん|ウンテン)/g;
     const INTERVAL = 0.5; // [s]
@@ -15,6 +21,7 @@ const DangerousDrivingManager = (($) => {
         if (matches) {
             _active = true;
             _try += matches.length;
+            soundHorn.play();
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
@@ -58,10 +65,12 @@ const AccelerationManager = (($) => {
         const downMatches = message.match(DownRegex);
 
         if (upMatches) {
+            soundBrake.play();
             _upActive = true;
             _upCount += upMatches.length;;
         }
         if (downMatches) {
+            soundBrake.play();
             _downActive = true;
             _downCount += downMatches.length;
         }
@@ -90,6 +99,7 @@ const PopManager = (($) => {
     const onCommentReceived = ($, message) => {
         const matches = message.match(Regex);
         if (matches) {
+            soundIdling.play();
             _active = true;
             _popCount += matches.length;
         }
@@ -118,6 +128,7 @@ const RotateManager = (($) => {
         const matches = message.match(Regex);
         if (matches) {
             _active = true;
+            soundHorn.play();
             _rotateCount += matches.length;
         }
     }
@@ -153,10 +164,12 @@ const LeftRightManager = (($) => {
         const leftMatches = message.match(LeftRegex);
         const rightMatches = message.match(RightRegex);
         if (leftMatches) {
+            soundBrake.play();
             _leftActive = true;
             _leftCount += leftMatches.length;
         }
         if (rightMatches) {
+            soundBrake.play();
             _rightActive = true;
             _rightCount += rightMatches.length;
         }
@@ -185,6 +198,8 @@ const SuperAccelerationManager = (($) => {
     const onCommentReceived = ($, message) => {
         const matches = message.match(REGEX);
         if (matches) {
+            soundExplode.play();
+            soundRocketStart.play();
             _active = true;
             _accelerationCount += matches.length;
         }
@@ -210,6 +225,7 @@ const DoughnutManager = (($) => {
     let _time = 0;
     const onCommentReceived = ($, message) => {
         if (REGEX.test(message)) {
+            soundRocketStart.play();
             _active = true;
         }
     }
@@ -247,6 +263,7 @@ const DeathRoleManager = (($) => {
     const onCommentReceived = ($, message) => {
         const matches = message.match(REGEX);
         if (matches) {
+            soundIdling.play();
             _active = true;
             _try += matches.length;
         }
@@ -290,6 +307,7 @@ const LovingManager = (($) => {
 
     const onCommentReceived = ($, message) => {
         if (REGEX.test(message)) {
+            soundHorn.play();
             _active = true;
         }
     }
@@ -325,6 +343,7 @@ const PumpingBrakeManager = (($) => {
 
     const onCommentReceived = ($, message) => {
         if (REGEX.test(message)) {
+            soundHorn.play();
             _active = true;
         }
     }
@@ -377,4 +396,5 @@ $.onPhysicsUpdate(deltaTime => {
     RotateManager.onPhysicsUpdate($, deltaTime);
     SuperAccelerationManager.onPhysicsUpdate($, deltaTime);
 });
+
 
