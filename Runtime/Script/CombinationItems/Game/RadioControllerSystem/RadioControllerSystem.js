@@ -3,15 +3,18 @@ const dirUpItem = new Vector3(0, 1, 0) // アイテムの上のベクトル
 const dirRightItem = new Vector3(0, 0, 1) // アイテムの右のベクトル
 
 const DangerousDrivingManager = (($) => {
-    const REGEX = /(あおり|煽り|アオリ)(運転|うんてん|ウンテン)/;
+    const REGEX = /(あおり|煽り|アオリ)(運転|うんてん|ウンテン)/g;
     const INTERVAL = 0.5; // [s]
     const TRY_COUNT = 4;
     let _active = false
     let _counter = 0;
     let _time = 0;
+    let _try = 0;
     const onCommentReceived = ($, message) => {
-        if (REGEX.test(message)) {
+        const matches = message.match(REGEX);
+        if (matches) {
             _active = true;
+            _try += matches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
@@ -32,8 +35,9 @@ const DangerousDrivingManager = (($) => {
             const velocity = torque.applyQuaternion(itemRotation);
             $.addImpulsiveTorque(velocity);
 
-            if (_counter >= TRY_COUNT) {
+            if (_counter >= TRY_COUNT*_try) {
                 _counter = 0;
+                _try = 0;
                 _active = false;
             }
             _counter++;
@@ -43,40 +47,51 @@ const DangerousDrivingManager = (($) => {
 })($);
 
 const AccelerationManager = (($) => {
-    const UpRegex = /(u|U|↑|上)/;
-    const DownRegex = /(d|D|↓|下)/;
+    const UpRegex = /(u|U|↑|上)/g;
+    const DownRegex = /(d|D|↓|下)/g;
     let _upActive = false
     let _downActive = false
+    let _upCount = 0;
+    let _downCount = 0;
     const onCommentReceived = ($, message) => {
-        if (UpRegex.test(message)) {
+        const upMatches = message.match(UpRegex);
+        const downMatches = message.match(DownRegex);
+
+        if (upMatches) {
             _upActive = true;
+            _upCount += upMatches.length;;
         }
-        if (DownRegex.test(message)) {
+        if (downMatches) {
             _downActive = true;
+            _downCount += downMatches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
         if (_upActive ^ _downActive) {
             let itemRotation = $.getRotation();
             const dir = _upActive ? dirFrontItem.clone() : dirFrontItem.clone().negate();
-            let intensity = 4;
+            let intensity = 4 * (_upActive ? _upCount : _downCount);
             const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
             $.addImpulsiveForce(velocity);
 
             _upActive = false;
             _downActive = false;
+            _upCount = 0;
+            _downCount = 0;
         }
     }
     return { onCommentReceived, onPhysicsUpdate };
 })($);
 
 const PopManager = (($) => {
-    const Regex = /(ポップ|ぽっぷ)/;
-
+    const Regex = /(ポップ|ぽっぷ)/g;
+    let _popCount = 0;
     let _active = false
     const onCommentReceived = ($, message) => {
-        if (Regex.test(message)) {
+        const matches = message.match(Regex);
+        if (matches) {
             _active = true;
+            _popCount += matches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
@@ -85,22 +100,25 @@ const PopManager = (($) => {
 
             let itemRotation = $.getRotation();
             const dir = dirFrontItem.clone().add(dirUpItem.clone());
-            const intensity = 4;
+            const intensity = 4 * _popCount;
             const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
             // $.log("addImpulsiveForce: velocity: " + velocity);
             $.addImpulsiveForce(velocity);
+            _popCount = 0;
         }
     }
     return { onCommentReceived, onPhysicsUpdate };
 })($);
 
 const RotateManager = (($) => {
-    const Regex = /(回転|かいてん|カイテン|ローテーション)/;
-
+    const Regex = /(回転|かいてん|カイテン|ローテーション)/g;
+    let _rotateCount = 0;
     let _active = false
     const onCommentReceived = ($, message) => {
-        if (Regex.test(message)) {
+        const matches = message.match(Regex);
+        if (matches) {
             _active = true;
+            _rotateCount += matches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
@@ -108,7 +126,7 @@ const RotateManager = (($) => {
             _active = false;
 
             let itemRotation = $.getRotation();
-            const intensityTorque = 4;
+            const intensityTorque = 4 * _rotateCount;
             const dirTorque = dirUpItem.clone().multiplyScalar(intensityTorque);
             const velTorque = dirTorque.applyQuaternion(itemRotation);
             $.addImpulsiveTorque(velTorque);
@@ -116,46 +134,59 @@ const RotateManager = (($) => {
             const intensity = 3;
             const dir = dirUpItem.clone().multiplyScalar(intensity);
             $.addImpulsiveForce(dir);
+            _rotateCount = 0;
+
         }
     }
     return { onCommentReceived, onPhysicsUpdate };
 })($);
 
 const LeftRightManager = (($) => {
-    const LeftRegex = /(←|ヒダリ|左|ひだり)/;
-    const RightRegex = /(→|ミギ|右|みぎ)/;
+    const LeftRegex = /(←|ヒダリ|左|ひだり)/g;
+    const RightRegex = /(→|ミギ|右|みぎ)/g;
 
     let _leftActive = false
     let _rightActive = false
+    let _leftCount = 0;
+    let _rightCount = 0;
     const onCommentReceived = ($, message) => {
-        if (LeftRegex.test(message)) {
+        const leftMatches = message.match(LeftRegex);
+        const rightMatches = message.match(RightRegex);
+        if (leftMatches) {
             _leftActive = true;
+            _leftCount += leftMatches.length;
         }
-        if (RightRegex.test(message)) {
+        if (rightMatches) {
             _rightActive = true;
+            _rightCount += rightMatches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
         if (_leftActive ^ _rightActive) {
             let itemRotation = $.getRotation();
             const dir = _rightActive ? dirUpItem.clone() : dirUpItem.clone().negate();
-            const intensityTorque = 4;
+            const intensityTorque = 4 * (_rightActive ? _rightCount : _leftCount);
             const dirTorque = dir.clone().multiplyScalar(intensityTorque);
             const velTorque = dirTorque.applyQuaternion(itemRotation);
             $.addImpulsiveTorque(velTorque);
             _leftActive = false;
             _rightActive = false;
+            _leftCount = 0;
+            _rightCount = 0;
         }
     }
     return { onCommentReceived, onPhysicsUpdate };
 })($);
 
 const SuperAccelerationManager = (($) => {
-    const REGEX = /(超|ちょう|チョウ)(加速|かそく|カソク)/;
+    const REGEX = /(超|ちょう|チョウ)(加速|かそく|カソク)/g;
     let _active = false
+    let _accelerationCount = 0;
     const onCommentReceived = ($, message) => {
-        if (REGEX.test(message)) {
+        const matches = message.match(REGEX);
+        if (matches) {
             _active = true;
+            _accelerationCount += matches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
@@ -163,9 +194,10 @@ const SuperAccelerationManager = (($) => {
             _active = false;
             let itemRotation = $.getRotation();
             const dir = dirFrontItem.clone();
-            const intensity = 100;
+            const intensity = 100 * _accelerationCount;
             const velocity = dir.applyQuaternion(itemRotation).multiplyScalar(intensity);
             $.addImpulsiveForce(velocity);
+            _accelerationCount = 0;
         }
     }
     return { onCommentReceived, onPhysicsUpdate };
@@ -205,15 +237,18 @@ const DoughnutManager = (($) => {
 })($);
 
 const DeathRoleManager = (($) => {
-    const REGEX = /(デスロール|ですろーる)/;
+    const REGEX = /(デスロール|ですろーる)/g;
     const INTERVAL = 0.5; // [s]
     const TRY_COUNT = 6;
     let _active = false
     let _counter = 0;
     let _time = 0;
+    let _try = 0;
     const onCommentReceived = ($, message) => {
-        if (REGEX.test(message)) {
+        const matches = message.match(REGEX);
+        if (matches) {
             _active = true;
+            _try += matches.length;
         }
     }
     const onPhysicsUpdate = ($, deltaTime) => {
@@ -232,8 +267,9 @@ const DeathRoleManager = (($) => {
             const velocity = torque.applyQuaternion(itemRotation);
             $.addImpulsiveTorque(velocity);
 
-            if (_counter >= TRY_COUNT) {
+            if (_counter >= TRY_COUNT*_try) {
                 _counter = 0;
+                _try = 0;
                 _active = false;
             }
             _counter++;
