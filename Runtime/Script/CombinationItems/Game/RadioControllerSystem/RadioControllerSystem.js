@@ -8,6 +8,13 @@ const soundHorn = $.audio("Horn");
 const soundIdling = $.audio("Idling");
 const soundRocketStart = $.audio("RocketStart");
 
+$.onStart(() => {
+    soundExplode.volume = 2.5;
+    soundBrake.volume = 2.0;
+    soundIdling.volume = 2.0;
+    soundRocketStart.volume = 2.5;
+});
+
 const DangerousDrivingManager = (($) => {
     const REGEX = /(あおり|煽り|アオリ)(運転|うんてん|ウンテン)/g;
     const INTERVAL = 0.5; // [s]
