@@ -2,14 +2,14 @@
 const interval = 15;
 const requestType = "CommentApp";
 const metaDataSubmit = "CommentAppSubmit";
-
+const endpointId = "07aa78a7-1631-4a3f-9712-9002798dd4b8";
 $.onStart(() => {
     // 現在のランキングを取得するため、recordsが空の状態でサーバーにアクセスする
     let request = {
         type: requestType,
         comments: ["Hello onStart"]
     };
-    $.callExternal(JSON.stringify(request), metaDataSubmit);
+    $.callExternal(endpointId, JSON.stringify(request), metaDataSubmit);
 
     // 前回のcallExternal呼び出しからの経過時間
     $.state.waitingTime = 0;
@@ -27,7 +27,7 @@ $.onUpdate(deltaTime => {
             type: requestType,
             comments: ["Hello onUpdate"]
          };
-        $.callExternal(JSON.stringify(request), metaDataSubmit);
+        $.callExternal(endpointId, JSON.stringify(request), metaDataSubmit);
     }
     $.state.waitingTime = waitingTime;
 });
