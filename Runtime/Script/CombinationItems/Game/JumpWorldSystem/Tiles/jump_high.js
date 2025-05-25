@@ -17,7 +17,6 @@ $.onUpdate(deltaTime => {
     // 接触しているオブジェクトをすべて取得
     let overlaps = $.getOverlaps();
 
-
     for (let overlap of overlaps) {
         // 接触しているオブジェクトがプレイヤーであるかどうかを確認
         let playerHandle = overlap.handle;
