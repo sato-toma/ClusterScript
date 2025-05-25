@@ -1,4 +1,4 @@
-const velocity = new Vector3(-2, 2, 0);
+const velocity = new Vector3(-4, 4, 0);
 
 
 $.onUpdate(deltaTime => {

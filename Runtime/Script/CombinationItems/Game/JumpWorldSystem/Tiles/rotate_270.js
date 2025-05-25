@@ -1,4 +1,4 @@
-const velocity = new Vector3(0, 2, 0);
+const velocity = new Vector3(0, 4, 0);
 const rotation = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), 270);
 
 $.onUpdate(deltaTime => {

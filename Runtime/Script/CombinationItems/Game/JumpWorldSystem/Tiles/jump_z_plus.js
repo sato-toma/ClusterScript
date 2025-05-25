@@ -1,4 +1,4 @@
-const velocity = new Vector3(0, 2, 2);
+const velocity = new Vector3(0, 4, 4);
 
 $.onUpdate(deltaTime => {
     // 初期化

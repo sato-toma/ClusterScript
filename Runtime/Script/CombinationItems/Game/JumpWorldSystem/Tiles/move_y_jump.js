@@ -1,4 +1,4 @@
-const velocity = new Vector3(0, 2, 0);
+const velocity = new Vector3(0, 4, 0);
 const tile = $.subNode("Tile");
 const period = 3;
 // y軸方向の箱が0.01であるため、移動幅を100倍する
